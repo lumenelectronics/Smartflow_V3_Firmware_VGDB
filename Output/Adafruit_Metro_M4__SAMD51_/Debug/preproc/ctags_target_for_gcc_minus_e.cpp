@@ -1,5 +1,6 @@
 # 1 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 # 1 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+# 2 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 // ---------------------------------------------------------------- /
 // Arduino I2C Scanner
 // Re-writed by Arbi Abdul Jabbaar
@@ -10,11 +11,16 @@
 // Devices with higher bit address might not be seen properly.
 // ---------------------------------------------------------------- /
 
-# 12 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 # 13 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 # 14 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 # 15 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 # 16 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
+# 17 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
+
+
+# 20 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
+
+# 22 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 
 
 // Serial Ports
@@ -26,9 +32,21 @@
 // SPI = SERCOM2 (pin table index  24/25/26)
 // FLASH_SPI = QSPI
 
+Uart& DebugPort=Serial1;
 
-Adafruit_SPIFlash flash(); // Use hardware SPI 
-# 71 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+Uart& GsmPort=Serial0;
+
+Serial_& UsbPort=Serial;
+
+SIM868_Unit GSM_Modem((Stream*)&GsmPort, (Stream*) &DebugPort, "GSM>>");
+
+
+Adafruit_FlashTransport_QSPI flashTransport((41u), (42u), (43u), (44u), (45u), (46u));
+Adafruit_SPIFlash flash_chip(&flashTransport);
+
+
+
+
 void Setup_IO()
 {
  pinMode(14,(0x0));
@@ -72,82 +90,6 @@ void Setup_IO()
  pinMode(50, (0x0));
  pinMode(52, (0x0));
 }
-# 148 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
-class Outputs_74HC595
-{
- uint32_t OutputBits;
-
- int pin_DS;
- int pin_SH_CP;
- int pin_ST_CP;
-
- uint32_t UpdateTick;
-
- void Shift_Data()
- {
-  // q0 is first flip flop in the chain so we must end with bit 0 done last
-  volatile uint32_t temp_value = OutputBits;
-
-  for (int x = 0;x < 32;x++)
-  {
-   if ((temp_value & 0x80000000) == 0x80000000)
-   {
-    digitalWrite(pin_DS, (0x1));
-   }
-   else
-   {
-    digitalWrite(pin_DS, (0x0));
-   }
-
-   digitalWrite(pin_SH_CP, (0x1));
-   temp_value <<= 1;
-   digitalWrite(pin_SH_CP, (0x0));
-  }
-
-  digitalWrite(pin_ST_CP, (0x1));
-  digitalWrite(pin_ST_CP, (0x0));
-
-  UpdateTick = millis();
- }
-
-public :
- Outputs_74HC595(int pDS,int pSH_CP, int pST_CP)
- {
-  pin_DS = pDS;
-  pin_SH_CP = pSH_CP;
-  pin_ST_CP = pST_CP;
-
-  pinMode(pin_DS, (0x1));
-  pinMode(pin_SH_CP, (0x1));
-  pinMode(pin_ST_CP, (0x1));
-
-  OutputBits = 0;
-
-  Shift_Data();
- }
-
-public:
- void Update()
- {
-  if ((millis() - UpdateTick) > 100)
-  {
-   Shift_Data();
-  }
- }
-
- void Output_On(int pMask)
- {
-  OutputBits |= pMask;
-  Shift_Data();
- }
-
- void Output_Off(int pMask)
- {
-  OutputBits &= ~pMask;
-  Shift_Data();
- }
-};
-
 
 Outputs_74HC595 Output_Regs(7, 5/*4*/, 4/*5*/);
 
@@ -156,6 +98,14 @@ static long send_serial_tick;
 void Service_Leds()
 {
  static int pLeds;
+ static long led_service_tick;
+
+ if (millis() < led_service_tick)
+ {
+  return;
+ }
+
+ led_service_tick = millis() + 200;
 
  switch (pLeds)
  {
@@ -238,45 +188,25 @@ void Service_Leds()
 
 void LoRa_Setup()
 {
- Serial1.println("LoRa Receiver");
+ DebugPort.println("LoRa Receiver");
 
  if (!LoRa.begin(915E6))
  {
-  Serial1.println("Starting LoRa failed!");
+  DebugPort.println("Starting LoRa failed!");
  }
  else
  {
-  Serial1.println("Starting LoRa OK");
+  DebugPort.println("Starting LoRa OK");
  }
 
- LoRa.dumpRegisters(Serial1);
+ LoRa.dumpRegisters(DebugPort);
 
- Serial1.flush();
+ DebugPort.flush();
 }
 
-void setup()
+void Modem_Setup()
 {
- Setup_IO();
- Wire.begin(); // Wire communication begin
- SPI.begin();
-
- Serial.begin(115200);
- Serial.println("Smartflow Io test");
- Serial.flush();
-
- Serial0.begin(115200);
- Serial0.println("Smartflow Io test");
- Serial0.flush();
-
- Serial1.begin(115200);
- Serial1.println("Smartflow Io test");
- Serial1.flush();
-
- LoRa_Setup();
-
- Output_Regs.Output_Off(0x00000800);
- Output_Regs.Output_Off(0x00000400);
- delay(2000);
+ DebugPort.println("Setting Up Modem");
 
  Output_Regs.Output_On(0x00000800);
  Output_Regs.Output_On(0x10000000);
@@ -295,14 +225,50 @@ void setup()
  Output_Regs.Output_Off(0x40000000);
 }
 
+void Flash_Setup()
+{
+ flash_chip.begin();
+
+ char temp[100];
+ snprintf(temp, sizeof(temp), "flash.getJEDECID()=%08lX", flash_chip.getJEDECID());
+
+ DebugPort.println(temp);
+ DebugPort.flush();
+}
+
+void setup()
+{
+ Setup_IO();
+ Wire.begin(); // Wire communication begin
+ SPI.begin();
+
+
+ UsbPort.begin(115200);
+ UsbPort.println("Smartflow V3");
+ UsbPort.flush();
+
+ DebugPort.begin(115200);
+ DebugPort.println("Smartflow V3");
+ DebugPort.flush();
+
+ GsmPort.begin(115200);
+ GsmPort.println("Smartflow V3");
+ GsmPort.flush();
+
+ LoRa_Setup();
+
+ Modem_Setup();
+
+ Flash_Setup();
+}
+
 void loop()
 {
  Output_Regs.Update();
 
  if (millis() > send_serial_tick)
  {
-
-  send_serial_tick = millis() + 200;
+  send_serial_tick = millis() + 100;
 
   volatile uint16_t Vbat_raw = analogRead(14);
 
@@ -312,17 +278,12 @@ void loop()
   vbat_mv /= 1000;
 
   char TestMessage[100];
-  snprintf(TestMessage, sizeof(TestMessage), "Serial USB,vbat=%ld,millis()=%ld", vbat_mv ,millis());
-  Serial.println(TestMessage);
-
-  snprintf(TestMessage, sizeof(TestMessage), "Serial0 GSM,vbat=%ld,millis()=%ld", vbat_mv, millis());
-  Serial0.println(TestMessage);
-
-  snprintf(TestMessage, sizeof(TestMessage), "Serial1 DEBUG,vbat=%ld,millis()=%ld", vbat_mv, millis());
-  Serial1.println(TestMessage);
-
-  Service_Leds();
+  snprintf(TestMessage, sizeof(TestMessage), "Serial USB,vbatt=%ld,millis()=%ld", vbat_mv ,millis());
+  UsbPort.println(TestMessage);
  }
+
+ Service_Leds();
+  GSM_Modem.Service();
 }
 
 void scan_i2c_bus()
@@ -330,7 +291,7 @@ void scan_i2c_bus()
   byte error, address; //variable for error and I2C address
   int nDevices;
 
-  Serial.println("Scanning...");
+  UsbPort.println("Scanning...");
 
   nDevices = 0;
   for (address = 1; address < 127; address++ )
@@ -343,25 +304,25 @@ void scan_i2c_bus()
 
     if (error == 0)
     {
-      Serial.print("I2C device found at address 0x");
+      UsbPort.print("I2C device found at address 0x");
       if (address < 16)
-        Serial.print("0");
-      Serial.print(address, 16);
-      Serial.println("  !");
+        UsbPort.print("0");
+      UsbPort.print(address, 16);
+      UsbPort.println("  !");
       nDevices++;
     }
     else if (error == 4)
     {
-      Serial.print("Unknown error at address 0x");
+      UsbPort.print("Unknown error at address 0x");
       if (address < 16)
-        Serial.print("0");
-      Serial.println(address, 16);
+        UsbPort.print("0");
+      UsbPort.println(address, 16);
     }
   }
   if (nDevices == 0)
-    Serial.println("No I2C devices found\n");
+    UsbPort.println("No I2C devices found\n");
   else
-    Serial.println("done\n");
+    UsbPort.println("done\n");
 
   delay(5000); // wait 5 seconds for the next I2C scan
 }

@@ -1,3 +1,4 @@
+#include <Lumen_SIM8686.h>
 // ---------------------------------------------------------------- /
 // Arduino I2C Scanner
 // Re-writed by Arbi Abdul Jabbaar
@@ -13,6 +14,11 @@
 #include <Adafruit_SPIFlash.h>
 #include "wiring_private.h" // pinPeripheral() function
 #include <LoRa.h>
+#include <Lumen_SIM8686.h>
+
+#include "Smartflow_V3_IO.h"
+
+#include "Smartflow_74HC595.h"
 
 
 // Serial Ports
@@ -24,49 +30,20 @@
 // SPI = SERCOM2 (pin table index  24/25/26)
 // FLASH_SPI = QSPI
 
+Uart& DebugPort=Serial1;
 
-Adafruit_SPIFlash flash(EXTERNAL_FLASH_USE_QSPI);     // Use hardware SPI 
+Uart& GsmPort=Serial0;
 
-#define BOOT_MESSAGE "Smartflow Io test"
+Serial_& UsbPort=Serial;
 
-#define PIN_BAT_AN 14
-#define PIN_VALVE_PWR_ON 36
-#define PIN_IP_ALARM 48
-#define PIN_SAMD51_NETLIGHT 49
-
-#define PIN_SAMD51_STATUS 27
-#define PIN_SAMD51_RI 29
+SIM868_Unit GSM_Modem((Stream*)&GsmPort, (Stream*) &DebugPort, "GSM>>");
 
 
-#define PIN_SAMD51_RTS 16
-#define PIN_SAMD51_CTS 47
+Adafruit_FlashTransport_QSPI flashTransport(PIN_QSPI_SCK, PIN_QSPI_CS, PIN_QSPI_IO0, PIN_QSPI_IO1, PIN_QSPI_IO2, PIN_QSPI_IO3);
+Adafruit_SPIFlash flash_chip(&flashTransport);
 
-#define PIN_DS 7
-#define PIN_SH_CP 5//4
-#define PIN_ST_CP 4//5
+#define BOOT_MESSAGE "Smartflow V3"
 
-#define PIN_MOSI 26
-#define PIN_SCK 27
-#define PIN_MISO 28
-#define PIN_IP_PULSE 50
-
-#define PIN_V5_CL 13
-#define PIN_V5_OP 12
-#define PIN_V4_CL 10
-#define PIN_V4_OP 11
-#define PIN_V3_CL 3
-#define PIN_V3_OP 2
-#define PIN_V2_CL 9
-#define PIN_V2_OP 8
-#define PIN_DATA_OUT 1
-#define PIN_DATA_IN 0
-
-#define PIN_V1_CL 40
-#define PIN_V1_OP 51
-
-#define PIN_SW_CENT 52
-#define PIN_LORA_CS 53
-#define PIN_LORA_RESET 54
 
 void Setup_IO()
 {
@@ -111,123 +88,22 @@ void Setup_IO()
 	pinMode(PIN_IP_PULSE, INPUT);	
 	pinMode(PIN_SW_CENT, INPUT);	
 }
-
-
-#define SO_V3_OPEN				0x00000002
-#define SO_V3_CLOSE				0x00000004
-#define SO_V2_OPEN				0x00000008
-#define SO_V2_CLOSE				0x00000010
-#define SO_V1_OPEN				0x00000020
-#define SO_V1_CLOSE				0x00000040
-
-#define SO_GSM_SW					0x00000400
-#define SO_GSM_PWR				0x00000800
-#define SO_V5_OPEN				0x00001000
-#define SO_V5_CLOSE				0x00002000
-#define SO_V4_OPEN				0x00004000
-#define SO_V4_CLOSE				0x00008000
-#define LED_REMOTE				0x00010000
-#define LED_GSM						0x00020000
-#define LED_VALVE_5				0x00040000
-#define LED_VALVE_4				0x00080000
-#define LED_VALVE_3				0x00100000
-#define LED_VALVE_2				0x00200000
-#define LED_VALVE_1				0x00400000
-
-#define LED_MAIN_TOP			0x01000000
-#define LED_MAIN_LEFT			0x02000000
-#define LED_MAIN_BOTTOM		0x04000000
-#define LED_MAIN_RIGHT		0x08000000
-#define LED_DIAG_1				0x10000000
-#define LED_DIAG_2				0x20000000
-#define LED_DIAG_3				0x40000000
-#define LED_DIAG_4				0x80000000
-
-
 	
-class Outputs_74HC595
-{	
-	uint32_t OutputBits;
-	
-	int pin_DS;
-	int pin_SH_CP;
-	int pin_ST_CP;
-	
-	uint32_t UpdateTick;
-	
-	void Shift_Data()
-	{
-		// q0 is first flip flop in the chain so we must end with bit 0 done last
-		volatile uint32_t temp_value = OutputBits;
-	
-		for (int x = 0;x < 32;x++)
-		{
-			if ((temp_value & 0x80000000) == 0x80000000)
-			{
-				digitalWrite(pin_DS, HIGH);
-			}
-			else
-			{
-				digitalWrite(pin_DS, LOW);
-			}
-		
-			digitalWrite(pin_SH_CP, HIGH);
-			temp_value <<= 1;		
-			digitalWrite(pin_SH_CP, LOW);
-		}		
-	
-		digitalWrite(pin_ST_CP, HIGH);
-		digitalWrite(pin_ST_CP, LOW);		
-		
-		UpdateTick = millis();
-	}
-		
-public :		
-	Outputs_74HC595(int pDS,int pSH_CP, int pST_CP)
-	{	
-		pin_DS = pDS;
-		pin_SH_CP = pSH_CP;
-		pin_ST_CP = pST_CP;		
-		
-		pinMode(pin_DS, OUTPUT);
-		pinMode(pin_SH_CP, OUTPUT);
-		pinMode(pin_ST_CP, OUTPUT);
-		
-		OutputBits = 0;
-		
-		Shift_Data();
-	}
-
-public:		
-	void Update()
-	{
-		if ((millis() - UpdateTick) > 100)
-		{
-			Shift_Data();
-		}						
-	}	
-	
-	void Output_On(int pMask)
-	{
-		OutputBits |= pMask;
-		Shift_Data();
-	}	
-
-	void Output_Off(int pMask)
-	{
-		OutputBits &= ~pMask;		
-		Shift_Data();
-	}	
-};
-
-
 Outputs_74HC595 Output_Regs(PIN_DS, PIN_SH_CP, PIN_ST_CP);
 
 static long send_serial_tick;
 
 void Service_Leds()
 {
-	static int pLeds;
+	static int pLeds;	
+	static long led_service_tick;
+	
+	if (millis() < led_service_tick)
+	{
+		return;
+	}
+	
+	led_service_tick = millis() + 200;
 		
 	switch (pLeds)
 	{
@@ -310,46 +186,26 @@ void Service_Leds()
 
 void LoRa_Setup()
 {
-	Serial1.println("LoRa Receiver");
+	DebugPort.println("LoRa Receiver");
 	
 	if (!LoRa.begin(915E6))
 	{
-		Serial1.println("Starting LoRa failed!");
+		DebugPort.println("Starting LoRa failed!");
 	}	
 	else
 	{
-		Serial1.println("Starting LoRa OK");
+		DebugPort.println("Starting LoRa OK");
 	}
 	
-	LoRa.dumpRegisters(Serial1);	
+	LoRa.dumpRegisters(DebugPort);	
 	
-	Serial1.flush();
+	DebugPort.flush();
 }
 
-void setup()
-{	
-	Setup_IO();
-	Wire.begin(); // Wire communication begin
-	SPI.begin();
+void Modem_Setup()
+{
+	DebugPort.println("Setting Up Modem");
 	
-	Serial.begin(115200);
-	Serial.println(BOOT_MESSAGE);
-	Serial.flush();
-	
-	Serial0.begin(115200);		
-	Serial0.println(BOOT_MESSAGE);
-	Serial0.flush();			
-	
-	Serial1.begin(115200);	
-	Serial1.println(BOOT_MESSAGE);		
-	Serial1.flush();
-	
-	LoRa_Setup();
-	
-	Output_Regs.Output_Off(SO_GSM_PWR);
-	Output_Regs.Output_Off(SO_GSM_SW);
-	delay(2000);
-
 	Output_Regs.Output_On(SO_GSM_PWR);
 	Output_Regs.Output_On(LED_DIAG_1);
 	delay(1000);
@@ -364,7 +220,44 @@ void setup()
 	
 	Output_Regs.Output_Off(LED_DIAG_1);
 	Output_Regs.Output_Off(LED_DIAG_2);
-	Output_Regs.Output_Off(LED_DIAG_3);
+	Output_Regs.Output_Off(LED_DIAG_3);	
+}
+
+void Flash_Setup()
+{
+	flash_chip.begin();
+	
+	char temp[100];
+	snprintf(temp, sizeof(temp), "flash.getJEDECID()=%08lX", flash_chip.getJEDECID());
+	
+	DebugPort.println(temp);
+	DebugPort.flush();
+}
+
+void setup()
+{	
+	Setup_IO();
+	Wire.begin(); // Wire communication begin
+	SPI.begin();
+	
+
+	UsbPort.begin(115200);
+	UsbPort.println(BOOT_MESSAGE);
+	UsbPort.flush();
+		
+	DebugPort.begin(115200);	
+	DebugPort.println(BOOT_MESSAGE);
+	DebugPort.flush();
+	
+	GsmPort.begin(115200);	
+	GsmPort.println(BOOT_MESSAGE);
+	GsmPort.flush();
+	
+	LoRa_Setup();
+	
+	Modem_Setup();		
+	
+	Flash_Setup();			
 }
 
 void loop()
@@ -372,9 +265,8 @@ void loop()
 	Output_Regs.Update();
 	
 	if (millis() > send_serial_tick)
-	{		
-		
-		send_serial_tick = millis() + 200;
+	{				
+		send_serial_tick = millis() + 100;
 		
 		volatile uint16_t Vbat_raw = analogRead(PIN_BAT_AN);
 		
@@ -384,17 +276,12 @@ void loop()
 		vbat_mv /= 1000;
 		
 		char TestMessage[100];
-		snprintf(TestMessage, sizeof(TestMessage), "Serial USB,vbat=%ld,millis()=%ld", vbat_mv ,millis());
-		Serial.println(TestMessage);
-		
-		snprintf(TestMessage, sizeof(TestMessage), "Serial0 GSM,vbat=%ld,millis()=%ld", vbat_mv, millis());
-		Serial0.println(TestMessage);
-		
-		snprintf(TestMessage, sizeof(TestMessage), "Serial1 DEBUG,vbat=%ld,millis()=%ld", vbat_mv, millis());
-		Serial1.println(TestMessage);	
-		
-		Service_Leds();		
+		snprintf(TestMessage, sizeof(TestMessage), "Serial USB,vbatt=%ld,millis()=%ld", vbat_mv ,millis());
+		UsbPort.println(TestMessage);				
 	}
+	
+	Service_Leds();		
+  GSM_Modem.Service();
 }
 
 void scan_i2c_bus()
@@ -402,7 +289,7 @@ void scan_i2c_bus()
   byte error, address; //variable for error and I2C address
   int nDevices;
 
-  Serial.println("Scanning...");
+  UsbPort.println("Scanning...");
 
   nDevices = 0;
   for (address = 1; address < 127; address++ )
@@ -415,25 +302,25 @@ void scan_i2c_bus()
 
     if (error == 0)
     {
-      Serial.print("I2C device found at address 0x");
+      UsbPort.print("I2C device found at address 0x");
       if (address < 16)
-        Serial.print("0");
-      Serial.print(address, HEX);
-      Serial.println("  !");
+        UsbPort.print("0");
+      UsbPort.print(address, HEX);
+      UsbPort.println("  !");
       nDevices++;
     }
     else if (error == 4)
     {
-      Serial.print("Unknown error at address 0x");
+      UsbPort.print("Unknown error at address 0x");
       if (address < 16)
-        Serial.print("0");
-      Serial.println(address, HEX);
+        UsbPort.print("0");
+      UsbPort.println(address, HEX);
     }
   }
   if (nDevices == 0)
-    Serial.println("No I2C devices found\n");
+    UsbPort.println("No I2C devices found\n");
   else
-    Serial.println("done\n");
+    UsbPort.println("done\n");
 
   delay(5000); // wait 5 seconds for the next I2C scan
 }

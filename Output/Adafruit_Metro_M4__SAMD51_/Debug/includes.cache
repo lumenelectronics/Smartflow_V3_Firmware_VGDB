@@ -11,6 +11,11 @@
   },
   {
     "Sourcefile": "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\Output\\Adafruit_Metro_M4__SAMD51_\\Debug\\sketch\\Smartflow_Metro_M4.ino.cpp",
+    "Include": "Lumen_SIM8686.h",
+    "Includepath": "C:\\Users\\adam\\Documents\\Arduino\\Libraries\\Lumen_SIM8686\\src"
+  },
+  {
+    "Sourcefile": "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\Output\\Adafruit_Metro_M4__SAMD51_\\Debug\\sketch\\Smartflow_Metro_M4.ino.cpp",
     "Include": "Wire.h",
     "Includepath": "C:\\Users\\adam\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.5.10\\libraries\\Wire"
   },
@@ -41,6 +46,11 @@
   },
   {
     "Sourcefile": "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\Output\\Adafruit_Metro_M4__SAMD51_\\Debug\\sketch\\Smartflow_Metro_M4.ino.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\adam\\Documents\\Arduino\\Libraries\\Lumen_SIM8686\\src\\Lumen_SIM8686.cpp",
     "Include": "",
     "Includepath": ""
   },

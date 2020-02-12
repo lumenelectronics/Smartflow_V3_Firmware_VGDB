@@ -1,5 +1,5 @@
 {
-  "additionalFiles": "",
+  "additionalFiles": "\\Smartflow_74HC595.h,\\Smartflow_V3_IO.h",
   "builtInLibrariesFolders": "",
   "customBuildProperties": "",
   "fqbn": "adafruit:samd:adafruit_metro_m4:cache=on,speed=120,opt=small,maxqspi=50,usbstack=arduino,debug=off",

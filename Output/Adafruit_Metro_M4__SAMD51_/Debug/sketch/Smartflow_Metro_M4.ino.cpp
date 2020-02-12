@@ -60,9 +60,11 @@ void Modem_Setup();
 void Flash_Setup();
 #line 237 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void setup();
-#line 263 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 273 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+void Service_Switch();
+#line 301 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void loop();
-#line 287 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 326 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void scan_i2c_bus();
 #line 48 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void Setup_IO()
@@ -280,6 +282,44 @@ void setup()
 	Flash_Setup();			
 }
 
+bool ip_pulse=false;
+bool ip_pulse_prev = false;
+
+bool ip_alarm = false;
+bool ip_alarm_prev = false;
+
+bool ip_swt_cent = false;
+bool ip_swt_cent_prev = false;
+
+
+void Service_Switch()
+{
+	ip_pulse = !digitalRead(PIN_IP_PULSE);
+	
+	if (ip_pulse_prev != ip_pulse)
+	{
+		ip_pulse_prev = ip_pulse;
+		DebugPort.print("ip_pulse=");
+		DebugPort.println(ip_pulse);
+	}
+	
+	ip_alarm = !digitalRead(PIN_IP_ALARM);
+	if (ip_alarm_prev != ip_alarm)
+	{
+		ip_alarm_prev = ip_alarm;
+		DebugPort.print("ip_alarm=");
+		DebugPort.println(ip_alarm);
+	}
+	
+	ip_swt_cent = !digitalRead(PIN_SW_CENT);
+	if (ip_swt_cent_prev != ip_swt_cent)
+	{
+		ip_swt_cent_prev = ip_swt_cent;
+		DebugPort.print("ip_swt_cent=");
+		DebugPort.println(ip_swt_cent);
+	}	
+}
+
 void loop()
 {	
 	Output_Regs.Update();
@@ -302,6 +342,7 @@ void loop()
 	
 	Service_Leds();		
   GSM_Modem.Service();
+	Service_Switch();
 }
 
 void scan_i2c_bus()

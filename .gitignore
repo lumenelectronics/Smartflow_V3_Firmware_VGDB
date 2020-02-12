@@ -1,0 +1,10 @@
+CodeDB
+VisualGDBCache
+
+*.db
+
+.vs
+*.d
+*.o
+*.elf
+*.a

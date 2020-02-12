@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29609.76
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{803FD0C6-D64E-4E16-9DC3-1DAEC859A3D2}") = "Smartflow_V3_VGDB", "Smartflow_V3_VGDB.vgdbproj", "{91E480DC-7667-4489-8D39-8EF45A2292A4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Adafruit_Metro_M4_(SAMD51) = Debug|Adafruit_Metro_M4_(SAMD51)
+		Release|Adafruit_Metro_M4_(SAMD51) = Release|Adafruit_Metro_M4_(SAMD51)
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{91E480DC-7667-4489-8D39-8EF45A2292A4}.Debug|Adafruit_Metro_M4_(SAMD51).ActiveCfg = Debug|Adafruit_Metro_M4_(SAMD51)
+		{91E480DC-7667-4489-8D39-8EF45A2292A4}.Debug|Adafruit_Metro_M4_(SAMD51).Build.0 = Debug|Adafruit_Metro_M4_(SAMD51)
+		{91E480DC-7667-4489-8D39-8EF45A2292A4}.Release|Adafruit_Metro_M4_(SAMD51).ActiveCfg = Release|Adafruit_Metro_M4_(SAMD51)
+		{91E480DC-7667-4489-8D39-8EF45A2292A4}.Release|Adafruit_Metro_M4_(SAMD51).Build.0 = Release|Adafruit_Metro_M4_(SAMD51)
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AE669A5A-DF6E-43A3-970F-B993B12BCD80}
+	EndGlobalSection
+EndGlobal

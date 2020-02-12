@@ -1,0 +1,11 @@
+{
+  "additionalFiles": "",
+  "builtInLibrariesFolders": "",
+  "customBuildProperties": "",
+  "fqbn": "adafruit:samd:adafruit_metro_m4:cache=on,speed=120,opt=small,maxqspi=50,usbstack=arduino,debug=off",
+  "hardwareFolders": "C:\\Program Files (x86)\\Sysprogs\\VisualGDB\\Arduino\\hardware,C:\\Users\\adam\\Documents\\ArduinoData\\packages,C:\\Users\\adam\\AppData\\Local\\Arduino15\\packages",
+  "otherLibrariesFolders": "C:\\Users\\adam\\Documents\\Arduino\\Libraries",
+  "runtime.ide.version": "10600",
+  "sketchLocation": "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino",
+  "toolsFolders": "C:\\Program Files (x86)\\Sysprogs\\VisualGDB\\Arduino/tools-builder,C:\\Users\\adam\\Documents/ArduinoData/packages,C:\\Users\\adam\\AppData\\Local/Arduino15/packages"
+}

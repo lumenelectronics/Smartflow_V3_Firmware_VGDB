@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#line 1 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
-#line 1 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 1 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 1 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 // ---------------------------------------------------------------- /
 // Arduino I2C Scanner
 // Re-writed by Arbi Abdul Jabbaar
@@ -40,8 +40,7 @@ Adafruit_SPIFlash flash(EXTERNAL_FLASH_USE_QSPI);     // Use hardware SPI
 #define PIN_SAMD51_STATUS 27
 #define PIN_SAMD51_RI 29
 
-#define PIN_SAMD51_TX 17
-#define PIN_SAMD51_RX 15
+
 #define PIN_SAMD51_RTS 16
 #define PIN_SAMD51_CTS 47
 
@@ -72,21 +71,19 @@ Adafruit_SPIFlash flash(EXTERNAL_FLASH_USE_QSPI);     // Use hardware SPI
 #define PIN_LORA_CS 53
 #define PIN_LORA_RESET 54
 
-#line 72 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 71 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void Setup_IO();
-#line 117 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
-void SERCOM0_0_Handler();
-#line 121 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
-void SERCOM0_1_Handler();
-#line 236 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 228 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void Service_Leds();
-#line 319 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 311 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+void LoRa_Setup();
+#line 329 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void setup();
-#line 356 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 370 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void loop();
-#line 385 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 400 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void scan_i2c_bus();
-#line 72 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 71 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void Setup_IO()
 {
 	pinMode(PIN_BAT_AN,INPUT);
@@ -97,10 +94,13 @@ void Setup_IO()
 	pinMode(PIN_SAMD51_NETLIGHT,INPUT);
 	pinMode(PIN_SAMD51_STATUS, INPUT);
 	pinMode(PIN_SAMD51_RI, INPUT);
-	pinMode(PIN_SAMD51_TX, INPUT);
-	pinMode(PIN_SAMD51_RX, INPUT);
+	
+	pinMode(PIN_SERIAL0_TX, OUTPUT);
+	digitalWrite(PIN_SERIAL0_TX, HIGH);	
+	
+	digitalWrite(PIN_SAMD51_CTS, LOW);
+	pinMode(PIN_SAMD51_CTS, OUTPUT);
 	pinMode(PIN_SAMD51_RTS, INPUT);
-	pinMode(PIN_SAMD51_CTS, INPUT);
 	
 	// valve inputs
 	pinMode(PIN_V1_CL, INPUT);
@@ -128,18 +128,6 @@ void Setup_IO()
 	pinMode(PIN_SW_CENT, INPUT);	
 }
 
-
-
-Uart Serial0(&sercom0, PIN_DATA_IN, PIN_DATA_OUT, PAD_SERIAL1_RX, PAD_SERIAL1_TX);
-
-void SERCOM0_0_Handler()
-{
-	Serial0.IrqHandler();
-}
-void SERCOM0_1_Handler()
-{
-	Serial0.IrqHandler();
-}
 
 #define SO_V3_OPEN				0x00000002
 #define SO_V3_CLOSE				0x00000004
@@ -238,11 +226,13 @@ public:
 	void Output_On(int pMask)
 	{
 		OutputBits |= pMask;
+		Shift_Data();
 	}	
 
 	void Output_Off(int pMask)
 	{
 		OutputBits &= ~pMask;		
+		Shift_Data();
 	}	
 };
 
@@ -334,27 +324,8 @@ void Service_Leds()
 	pLeds %= 8;	
 }
 
-void setup()
-{	
-	Setup_IO();
-	Wire.begin(); // Wire communication begin
-	SPI.begin();
-	
-	Serial.begin(115200);
-	Serial.println(BOOT_MESSAGE);
-	
-	Serial0.begin(115200);
-	// Assign pins 10 & 11 SERCOM functionality
-	pinPeripheral(PIN_DATA_OUT, PIO_SERCOM);
-	pinPeripheral(PIN_DATA_IN, PIO_SERCOM);	
-	Serial0.println(BOOT_MESSAGE);
-	
-	Serial1.begin(115200);	
-	Serial1.println(BOOT_MESSAGE);		
-	
-	Output_Regs.Output_On(SO_GSM_SW);
-	Output_Regs.Output_On(SO_GSM_PWR);	
-	
+void LoRa_Setup()
+{
 	Serial1.println("LoRa Receiver");
 	
 	if (!LoRa.begin(915E6))
@@ -366,9 +337,50 @@ void setup()
 		Serial1.println("Starting LoRa OK");
 	}
 	
-	LoRa.dumpRegisters(Serial1);
+	LoRa.dumpRegisters(Serial1);	
 	
 	Serial1.flush();
+}
+
+void setup()
+{	
+	Setup_IO();
+	Wire.begin(); // Wire communication begin
+	SPI.begin();
+	
+	Serial.begin(115200);
+	Serial.println(BOOT_MESSAGE);
+	Serial.flush();
+	
+	Serial0.begin(115200);		
+	Serial0.println(BOOT_MESSAGE);
+	Serial0.flush();			
+	
+	Serial1.begin(115200);	
+	Serial1.println(BOOT_MESSAGE);		
+	Serial1.flush();
+	
+	LoRa_Setup();
+	
+	Output_Regs.Output_Off(SO_GSM_PWR);
+	Output_Regs.Output_Off(SO_GSM_SW);
+	delay(2000);
+
+	Output_Regs.Output_On(SO_GSM_PWR);
+	Output_Regs.Output_On(LED_DIAG_1);
+	delay(1000);
+	
+	Output_Regs.Output_On(SO_GSM_SW);
+	Output_Regs.Output_On(LED_DIAG_2);	
+	delay(1000);
+	Output_Regs.Output_Off(SO_GSM_SW);
+	Output_Regs.Output_On(LED_DIAG_3);
+	
+	delay(1000);
+	
+	Output_Regs.Output_Off(LED_DIAG_1);
+	Output_Regs.Output_Off(LED_DIAG_2);
+	Output_Regs.Output_Off(LED_DIAG_3);
 }
 
 void loop()
@@ -377,6 +389,7 @@ void loop()
 	
 	if (millis() > send_serial_tick)
 	{		
+		
 		send_serial_tick = millis() + 200;
 		
 		volatile uint16_t Vbat_raw = analogRead(PIN_BAT_AN);

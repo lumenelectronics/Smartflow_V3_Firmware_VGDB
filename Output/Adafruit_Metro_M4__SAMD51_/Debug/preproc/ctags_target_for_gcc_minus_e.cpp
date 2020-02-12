@@ -1,5 +1,5 @@
-# 1 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
-# 1 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+# 1 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+# 1 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 // ---------------------------------------------------------------- /
 // Arduino I2C Scanner
 // Re-writed by Arbi Abdul Jabbaar
@@ -10,11 +10,11 @@
 // Devices with higher bit address might not be seen properly.
 // ---------------------------------------------------------------- /
 
-# 12 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
-# 13 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
-# 14 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
-# 15 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
-# 16 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
+# 12 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
+# 13 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
+# 14 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
+# 15 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
+# 16 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 
 
 // Serial Ports
@@ -28,7 +28,7 @@
 
 
 Adafruit_SPIFlash flash(); // Use hardware SPI 
-# 72 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+# 71 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void Setup_IO()
 {
  pinMode(14,(0x0));
@@ -39,10 +39,13 @@ void Setup_IO()
  pinMode(49,(0x0));
  pinMode(27, (0x0));
  pinMode(29, (0x0));
- pinMode(17, (0x0));
- pinMode(15, (0x0));
+
+ pinMode((55ul), (0x1));
+ digitalWrite((55ul), (0x1));
+
+ digitalWrite(47, (0x0));
+ pinMode(47, (0x1));
  pinMode(16, (0x0));
- pinMode(47, (0x0));
 
  // valve inputs
  pinMode(40, (0x0));
@@ -69,20 +72,7 @@ void Setup_IO()
  pinMode(50, (0x0));
  pinMode(52, (0x0));
 }
-
-
-
-Uart Serial0(&sercom0, 0, 1, (SERCOM_RX_PAD_1), (UART_TX_PAD_0));
-
-void SERCOM0_0_Handler()
-{
- Serial0.IrqHandler();
-}
-void SERCOM0_1_Handler()
-{
- Serial0.IrqHandler();
-}
-# 158 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_VGDB\\Smartflow_V3_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+# 148 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 class Outputs_74HC595
 {
  uint32_t OutputBits;
@@ -148,11 +138,13 @@ public:
  void Output_On(int pMask)
  {
   OutputBits |= pMask;
+  Shift_Data();
  }
 
  void Output_Off(int pMask)
  {
   OutputBits &= ~pMask;
+  Shift_Data();
  }
 };
 
@@ -244,27 +236,8 @@ void Service_Leds()
  pLeds %= 8;
 }
 
-void setup()
+void LoRa_Setup()
 {
- Setup_IO();
- Wire.begin(); // Wire communication begin
- SPI.begin();
-
- Serial.begin(115200);
- Serial.println("Smartflow Io test");
-
- Serial0.begin(115200);
- // Assign pins 10 & 11 SERCOM functionality
- pinPeripheral(1, PIO_SERCOM);
- pinPeripheral(0, PIO_SERCOM);
- Serial0.println("Smartflow Io test");
-
- Serial1.begin(115200);
- Serial1.println("Smartflow Io test");
-
- Output_Regs.Output_On(0x00000400);
- Output_Regs.Output_On(0x00000800);
-
  Serial1.println("LoRa Receiver");
 
  if (!LoRa.begin(915E6))
@@ -281,12 +254,54 @@ void setup()
  Serial1.flush();
 }
 
+void setup()
+{
+ Setup_IO();
+ Wire.begin(); // Wire communication begin
+ SPI.begin();
+
+ Serial.begin(115200);
+ Serial.println("Smartflow Io test");
+ Serial.flush();
+
+ Serial0.begin(115200);
+ Serial0.println("Smartflow Io test");
+ Serial0.flush();
+
+ Serial1.begin(115200);
+ Serial1.println("Smartflow Io test");
+ Serial1.flush();
+
+ LoRa_Setup();
+
+ Output_Regs.Output_Off(0x00000800);
+ Output_Regs.Output_Off(0x00000400);
+ delay(2000);
+
+ Output_Regs.Output_On(0x00000800);
+ Output_Regs.Output_On(0x10000000);
+ delay(1000);
+
+ Output_Regs.Output_On(0x00000400);
+ Output_Regs.Output_On(0x20000000);
+ delay(1000);
+ Output_Regs.Output_Off(0x00000400);
+ Output_Regs.Output_On(0x40000000);
+
+ delay(1000);
+
+ Output_Regs.Output_Off(0x10000000);
+ Output_Regs.Output_Off(0x20000000);
+ Output_Regs.Output_Off(0x40000000);
+}
+
 void loop()
 {
  Output_Regs.Update();
 
  if (millis() > send_serial_tick)
  {
+
   send_serial_tick = millis() + 200;
 
   volatile uint16_t Vbat_raw = analogRead(14);

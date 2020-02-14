@@ -257,7 +257,9 @@ void setup()
 	
 	Modem_Setup();		
 	
-	Flash_Setup();			
+	Flash_Setup();		
+	
+	digitalWrite(PIN_VALVE_PWR_ON, HIGH);
 }
 
 bool ip_pulse=false;

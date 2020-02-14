@@ -260,6 +260,8 @@ void setup()
  Modem_Setup();
 
  Flash_Setup();
+
+ digitalWrite(36, (0x1));
 }
 
 bool ip_pulse=false;

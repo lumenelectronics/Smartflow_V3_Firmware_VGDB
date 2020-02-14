@@ -60,11 +60,11 @@ void Modem_Setup();
 void Flash_Setup();
 #line 237 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void setup();
-#line 273 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 275 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void Service_Switch();
-#line 301 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 303 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void loop();
-#line 326 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 328 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void scan_i2c_bus();
 #line 48 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void Setup_IO()
@@ -279,7 +279,9 @@ void setup()
 	
 	Modem_Setup();		
 	
-	Flash_Setup();			
+	Flash_Setup();		
+	
+	digitalWrite(PIN_VALVE_PWR_ON, HIGH);
 }
 
 bool ip_pulse=false;

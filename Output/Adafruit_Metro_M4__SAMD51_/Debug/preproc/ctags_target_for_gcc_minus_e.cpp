@@ -15,12 +15,13 @@
 # 14 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 # 15 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 # 16 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
-# 17 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
+
+# 18 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 
 
-# 20 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
+# 21 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 
-# 22 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
+# 23 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 
 
 // Serial Ports
@@ -236,6 +237,151 @@ void Flash_Setup()
  DebugPort.flush();
 }
 
+
+bool ip_pulse=false;
+bool ip_pulse_prev = false;
+
+bool ip_alarm = false;
+bool ip_alarm_prev = false;
+
+bool ip_swt_cent = false;
+bool ip_swt_cent_prev = false;
+
+
+void Service_Switch()
+{
+/*	ip_pulse = !digitalRead(PIN_IP_PULSE);
+
+	
+
+	if (ip_pulse_prev != ip_pulse)
+
+	{
+
+		ip_pulse_prev = ip_pulse;
+
+		DebugPort.print("ip_pulse=");
+
+		DebugPort.println(ip_pulse);
+
+	}*/
+# 260 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+ ip_alarm = !digitalRead(48);
+ if (ip_alarm_prev != ip_alarm)
+ {
+  ip_alarm_prev = ip_alarm;
+  DebugPort.print("ip_alarm=");
+  DebugPort.println(ip_alarm);
+ }
+
+ ip_swt_cent = !digitalRead(52);
+ if (ip_swt_cent_prev != ip_swt_cent)
+ {
+  ip_swt_cent_prev = ip_swt_cent;
+  DebugPort.print("ip_swt_cent=");
+  DebugPort.println(ip_swt_cent);
+ }
+}
+void scan_i2c_bus()
+{
+ byte error, address; //variable for error and I2C address
+ int nDevices;
+
+ UsbPort.println("Scanning...");
+
+ nDevices = 0;
+ for (address = 1; address < 127; address++)
+ {
+  // The i2c_scanner uses the return value of
+  // the Write.endTransmisstion to see if
+  // a device did acknowledge to the address.
+  Wire.beginTransmission(address);
+  error = Wire.endTransmission();
+
+  if (error == 0)
+  {
+   UsbPort.print("I2C device found at address 0x");
+   if (address < 16)
+    UsbPort.print("0");
+   UsbPort.print(address, 16);
+   UsbPort.println("  !");
+   nDevices++;
+  }
+  else if (error == 4)
+  {
+   UsbPort.print("Unknown error at address 0x");
+   if (address < 16)
+    UsbPort.print("0");
+   UsbPort.println(address, 16);
+  }
+ }
+ if (nDevices == 0)
+  UsbPort.println("No I2C devices found\n");
+ else
+  UsbPort.println("done\n");
+
+ delay(5000); // wait 5 seconds for the next I2C scan
+}
+
+void anISR()
+{
+
+}
+
+// Adafruit Feather M4: Count input pulses with 32-bit timer TC0 on pin A4 and 30MHz test output with timer TCC0 on D10
+void setup_counters()
+{
+ int InputPin = 50;
+ int InteruptNumber = 15;
+
+
+ // EIC Interrupt System ///////////////////////////////////////////////////////////////////////////////
+ //pinPeripheral(InputPin, PIO_EXTINT);
+
+ attachInterrupt(( InputPin ), anISR, (0x0));
+ detachInterrupt(( InputPin ));
+
+ // Enable the port multiplexer on analog pin A4
+ //PORT->Group[g_APinDescription[InputPin].ulPort].PINCFG[g_APinDescription[InputPin].ulPin].bit.PMUXEN = 1;
+
+ // Set-up the pin as an EIC (interrupt) peripheral on analog pin InputPin
+ //PORT->Group[g_APinDescription[InputPin].ulPort].PMUX[g_APinDescription[InputPin].ulPin >> 1].reg |= PORT_PMUX_PMUXE(0);	
+
+ ((Eic *)0x40002800UL) /**< \brief (EIC) APB Base Address */->CTRLA.bit.ENABLE = 0; // Disable the EIC peripheral
+ while(((Eic *)0x40002800UL) /**< \brief (EIC) APB Base Address */->SYNCBUSY.bit.ENABLE); // Wait for synchronization
+ ((Eic *)0x40002800UL) /**< \brief (EIC) APB Base Address */->CONFIG[0].reg = (0x5U /**< C code: Unsigned integer literal constant value */ /**< \brief (EIC_CONFIG) Low level detection */ << 16 /**< \brief (EIC_CONFIG) Input Sense Configuration 4 */); // Set event on detecting a HIGH level
+ ((Eic *)0x40002800UL) /**< \brief (EIC) APB Base Address */->EVCTRL.reg = 1 << InteruptNumber; // Enable event output on external interrupt 4
+ ((Eic *)0x40002800UL) /**< \brief (EIC) APB Base Address */->INTENCLR.reg = 1 << InteruptNumber; // Clear interrupt on external interrupt 4
+ ((Eic *)0x40002800UL) /**< \brief (EIC) APB Base Address */->ASYNCH.reg = 1 << InteruptNumber; // Set-up interrupt as asynchronous input
+ ((Eic *)0x40002800UL) /**< \brief (EIC) APB Base Address */->CTRLA.bit.ENABLE = 1; // Enable the EIC peripheral
+ while(((Eic *)0x40002800UL) /**< \brief (EIC) APB Base Address */->SYNCBUSY.bit.ENABLE); // Wait for synchronization
+
+ // TC0 Count Timer //////////////////////////////////////////////////////////////////////////////////
+ ((Gclk *)0x40001C00UL) /**< \brief (GCLK) APB Base Address */->PCHCTRL[9 /* Index of Generic Clock*/].reg = (0x1U /**< C code: Unsigned integer literal constant value */ << 6 /**< \brief (GCLK_PCHCTRL) Channel Enable */) | // Enable perhipheral channel for TC0
+                                  (0x0U /**< C code: Unsigned integer literal constant value */ /**< \brief (GCLK_PCHCTRL) Generic clock generator 0 */ << 0 /**< \brief (GCLK_PCHCTRL) Generic Clock Generator */); // Connect generic clock 0 at 120MHz
+
+ ((Tc *)0x40003800UL) /**< \brief (TC0) APB Base Address */->COUNT32.CTRLA.reg = (0x2U /**< C code: Unsigned integer literal constant value */ /**< \brief (TC_CTRLA) Counter in 32-bit mode */ << 2 /**< \brief (TC_CTRLA) Timer Counter Mode */); // Set-up TC0/TC1 timers in 32-bit mode
+
+ // Event System ///////////////////////////////////////////////////////////////////////////////
+ ((Mclk *)0x40000800UL) /**< \brief (MCLK) APB Base Address */->APBBMASK.reg |= (0x1U /**< C code: Unsigned integer literal constant value */ << 7 /**< \brief (MCLK_APBBMASK) EVSYS APB Clock Enable */); // Switch on the event system peripheral
+
+ // Select the event system user on channel 0 (USER number = channel number + 1)
+ ((Evsys *)0x4100E000UL) /**< \brief (EVSYS) APB Base Address */->USER[44].reg = ((0x3FU /**< C code: Unsigned integer literal constant value */ << 0 /**< \brief (EVSYS_USER) Channel Event Selection */) & ((1) << 0 /**< \brief (EVSYS_USER) Channel Event Selection */)); // Set the event user (receiver) as timer TC0
+
+ // Select the event system generator on channel 0
+ ((Evsys *)0x4100E000UL) /**< \brief (EVSYS) APB Base Address */->Channel[0].CHANNEL.reg = (0x0U /**< C code: Unsigned integer literal constant value */ /**< \brief (EVSYS_CHANNEL) No event output when using the resynchronized or synchronous path */ << 10 /**< \brief (EVSYS_CHANNEL) Edge Detection Selection */) | // No event edge detection
+ (0x2U /**< C code: Unsigned integer literal constant value */ /**< \brief (EVSYS_CHANNEL) Asynchronous path */ << 8 /**< \brief (EVSYS_CHANNEL) Path Selection */) | // Set event path as asynchronous
+ ((0x7FU /**< C code: Unsigned integer literal constant value */ << 0 /**< \brief (EVSYS_CHANNEL) Event Generator Selection */) & ((18 + InteruptNumber) << 0 /**< \brief (EVSYS_CHANNEL) Event Generator Selection */)); // Set event generator (sender) as external interrupt 4     
+
+ ((Tc *)0x40003800UL) /**< \brief (TC0) APB Base Address */->COUNT32.EVCTRL.reg = (0x1U /**< C code: Unsigned integer literal constant value */ << 5 /**< \brief (TC_EVCTRL) TC Event Enable */) | // Enable the TC event input                       
+ (0x2U /**< C code: Unsigned integer literal constant value */ /**< \brief (TC_EVCTRL) Count on event */ << 0 /**< \brief (TC_EVCTRL) Event Action */); // Set up the timer to count on event
+
+ // Enable Timer  ///////////////////////////////////////////////////////////////////////////////
+
+ ((Tc *)0x40003800UL) /**< \brief (TC0) APB Base Address */->COUNT32.CTRLA.bit.ENABLE = 1; // Enable timer TC0
+ while(((Tc *)0x40003800UL) /**< \brief (TC0) APB Base Address */->COUNT32.SYNCBUSY.bit.ENABLE); // Wait for synchronization	
+}
+
 void setup()
 {
  Setup_IO();
@@ -261,46 +407,14 @@ void setup()
 
  Flash_Setup();
 
- digitalWrite(36, (0x1));
+ //digitalWrite(PIN_VALVE_PWR_ON, HIGH);
+
+ setup_counters();
+ //test_loop();
 }
 
-bool ip_pulse=false;
-bool ip_pulse_prev = false;
-
-bool ip_alarm = false;
-bool ip_alarm_prev = false;
-
-bool ip_swt_cent = false;
-bool ip_swt_cent_prev = false;
-
-
-void Service_Switch()
-{
- ip_pulse = !digitalRead(50);
-
- if (ip_pulse_prev != ip_pulse)
- {
-  ip_pulse_prev = ip_pulse;
-  DebugPort.print("ip_pulse=");
-  DebugPort.println(ip_pulse);
- }
-
- ip_alarm = !digitalRead(48);
- if (ip_alarm_prev != ip_alarm)
- {
-  ip_alarm_prev = ip_alarm;
-  DebugPort.print("ip_alarm=");
-  DebugPort.println(ip_alarm);
- }
-
- ip_swt_cent = !digitalRead(52);
- if (ip_swt_cent_prev != ip_swt_cent)
- {
-  ip_swt_cent_prev = ip_swt_cent;
-  DebugPort.print("ip_swt_cent=");
-  DebugPort.println(ip_swt_cent);
- }
-}
+uint32_t TC0_Cached=0;
+bool TC0_Clear = 0;
 
 void loop()
 {
@@ -308,7 +422,7 @@ void loop()
 
  if (millis() > send_serial_tick)
  {
-  send_serial_tick = millis() + 100;
+  send_serial_tick = millis() + 1000;
 
   volatile uint16_t Vbat_raw = analogRead(14);
 
@@ -317,53 +431,27 @@ void loop()
   volatile uint32_t vbat_mv = Vbat_raw * 9668;
   vbat_mv /= 1000;
 
+  {
+   ((Tc *)0x40003800UL) /**< \brief (TC0) APB Base Address */->COUNT32.CTRLBSET.reg = (0x4U /**< C code: Unsigned integer literal constant value */ /**< \brief (TC_CTRLBCLR) Force a read synchronization of COUNT */ << 5 /**< \brief (TC_CTRLBCLR) Command */); // Initiate read synchronization of COUNT register
+   while(((Tc *)0x40003800UL) /**< \brief (TC0) APB Base Address */->COUNT32.SYNCBUSY.bit.CTRLB); // Wait for CTRLBSET register write synchronization
+   while(((Tc *)0x40003800UL) /**< \brief (TC0) APB Base Address */->COUNT32.SYNCBUSY.bit.COUNT); // Wait for COUNT register read synchronization		
+
+   TC0_Cached = ((Tc *)0x40003800UL) /**< \brief (TC0) APB Base Address */->COUNT32.COUNT.reg;
+
+   if (TC0_Clear)
+   {
+    ((Tc *)0x40003800UL) /**< \brief (TC0) APB Base Address */->COUNT32.CTRLBSET.reg = (0x1U /**< C code: Unsigned integer literal constant value */ /**< \brief (TC_CTRLBCLR) Force a start, restart or retrigger */ << 5 /**< \brief (TC_CTRLBCLR) Command */); // Initiate timer reset
+    while(((Tc *)0x40003800UL) /**< \brief (TC0) APB Base Address */->COUNT32.SYNCBUSY.bit.CTRLB); // Wait for CTRLBSET register write synchronization		
+   }
+  }
+
   char TestMessage[100];
-  snprintf(TestMessage, sizeof(TestMessage), "Serial USB,vbatt=%ld,millis()=%ld", vbat_mv ,millis());
+  snprintf(TestMessage, sizeof(TestMessage), "Serial USB,TC0:%ld,vbatt=%ld,millis()=%ld", TC0_Cached, vbat_mv, millis());
   UsbPort.println(TestMessage);
+  DebugPort.println(TestMessage);
  }
 
  Service_Leds();
   GSM_Modem.Service();
  Service_Switch();
-}
-
-void scan_i2c_bus()
-{
-  byte error, address; //variable for error and I2C address
-  int nDevices;
-
-  UsbPort.println("Scanning...");
-
-  nDevices = 0;
-  for (address = 1; address < 127; address++ )
-  {
-    // The i2c_scanner uses the return value of
-    // the Write.endTransmisstion to see if
-    // a device did acknowledge to the address.
-    Wire.beginTransmission(address);
-    error = Wire.endTransmission();
-
-    if (error == 0)
-    {
-      UsbPort.print("I2C device found at address 0x");
-      if (address < 16)
-        UsbPort.print("0");
-      UsbPort.print(address, 16);
-      UsbPort.println("  !");
-      nDevices++;
-    }
-    else if (error == 4)
-    {
-      UsbPort.print("Unknown error at address 0x");
-      if (address < 16)
-        UsbPort.print("0");
-      UsbPort.println(address, 16);
-    }
-  }
-  if (nDevices == 0)
-    UsbPort.println("No I2C devices found\n");
-  else
-    UsbPort.println("done\n");
-
-  delay(5000); // wait 5 seconds for the next I2C scan
 }

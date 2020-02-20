@@ -24,6 +24,9 @@
     </ProjectModeSettings>
   </Project>
   <Build xsi:type="com.visualgdb.build.external.arduino">
+    <AdditionalLibraryDirectories>
+      <string>D:\SourceTree\Smartflow\Firmware\Smartflow_V3_Firmware_VGDB\Libs</string>
+    </AdditionalLibraryDirectories>
     <IgnoreNormalLibraryDirectories>false</IgnoreNormalLibraryDirectories>
     <OutputSubdirectory>Output\$(PlatformName.defuse)\$(ConfigurationName.defuse)</OutputSubdirectory>
     <EnableVerboseBuild>false</EnableVerboseBuild>
@@ -62,7 +65,7 @@
   </CodeSense>
   <Configurations>
     <VisualGDBConfiguration>
-      <PlatformName>Adafruit_Metro_M4_(SAMD51)</PlatformName>
+      <PlatformName>Smartflow_M4_(SAMD51)</PlatformName>
       <DebugSettingsOverride xsi:type="com.visualgdb.debug.embedded">
         <AdditionalStartupCommands />
         <AdditionalGDBSettings>
@@ -104,7 +107,6 @@
               <string>target remote :$$SYS:GDB_PORT$$</string>
               <string>mon reset</string>
               <string>load</string>
-              <string>mon reset</string>
             </StartupCommands>
             <UseUnreliableLiveMemoryEngine>false</UseUnreliableLiveMemoryEngine>
             <ProgramFLASHUsingExternalTool>false</ProgramFLASHUsingExternalTool>
@@ -126,8 +128,7 @@
         <CheckInterfaceDrivers>true</CheckInterfaceDrivers>
       </DebugSettingsOverride>
       <BuildSettingsExtension xsi:type="com.visualgdb.build.external.arduino.extension">
-        <BoardID>adafruit:samd:adafruit_metro_m4</BoardID>
-        <COMPort />
+        <BoardID>adafruit:samd:smartflow_m4</BoardID>
         <Properties>
           <Entries>
             <KeyValue>

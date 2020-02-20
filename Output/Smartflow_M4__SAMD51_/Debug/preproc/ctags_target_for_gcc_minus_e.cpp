@@ -1,6 +1,5 @@
 # 1 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 # 1 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
-# 2 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 // ---------------------------------------------------------------- /
 // Arduino I2C Scanner
 // Re-writed by Arbi Abdul Jabbaar
@@ -11,17 +10,17 @@
 // Devices with higher bit address might not be seen properly.
 // ---------------------------------------------------------------- /
 
+# 12 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 # 13 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 # 14 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 # 15 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
-# 16 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 
+# 17 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 # 18 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 
+# 20 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 
-# 21 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
-
-# 23 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
+# 22 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino" 2
 
 
 // Serial Ports
@@ -59,8 +58,8 @@ void Setup_IO()
  pinMode(27, (0x0));
  pinMode(29, (0x0));
 
- pinMode(PIN_SERIAL0_TX, (0x1));
- digitalWrite(PIN_SERIAL0_TX, (0x1));
+ pinMode((55ul), (0x1));
+ digitalWrite((55ul), (0x1));
 
  digitalWrite(47, (0x0));
  pinMode(47, (0x1));
@@ -265,7 +264,7 @@ void Service_Switch()
 		DebugPort.println(ip_pulse);
 
 	}*/
-# 260 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+# 259 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
  ip_alarm = !digitalRead(48);
  if (ip_alarm_prev != ip_alarm)
  {

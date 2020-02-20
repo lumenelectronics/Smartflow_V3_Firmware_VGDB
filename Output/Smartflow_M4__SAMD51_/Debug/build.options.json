@@ -2,7 +2,7 @@
   "additionalFiles": "\\Smartflow_74HC595.h,\\Smartflow_V3_IO.h",
   "builtInLibrariesFolders": "",
   "customBuildProperties": "",
-  "fqbn": "adafruit:samd:smartflow_m4:cache=on,speed=120,opt=small,maxqspi=50,usbstack=arduino,debug=off",
+  "fqbn": "adafruit:samd:smartflow_m4:cache=on,speed=120,opt=small,maxqspi=50,usbstack=arduino,debug=on",
   "hardwareFolders": "C:\\Program Files (x86)\\Sysprogs\\VisualGDB\\Arduino\\hardware,C:\\Users\\adam\\Documents\\Arduino\\hardware,C:\\Users\\adam\\Documents\\ArduinoData\\packages,C:\\Users\\adam\\AppData\\Local\\Arduino15\\packages",
   "otherLibrariesFolders": "C:\\Users\\adam\\Documents\\Arduino\\Libraries,D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\Libs",
   "runtime.ide.version": "10600",

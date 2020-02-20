@@ -46,6 +46,20 @@ Adafruit_SPIFlash flash_chip(&flashTransport);
 
 
 
+uint32_t Get_Flash_Checksum(uint32_t pStart, uint32_t pStop)
+{
+ uint32_t x = 0;
+ volatile uint8_t *ptr = 0;
+ volatile uint32_t check = 0;
+
+ for (x = pStart;x < (pStop + 1);x++)
+ {
+  check += ptr[x];
+ }
+
+ return check;
+}
+
 
 void Setup_IO()
 {
@@ -264,21 +278,25 @@ void Service_Switch()
 		DebugPort.println(ip_pulse);
 
 	}*/
-# 259 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+# 273 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
  ip_alarm = !digitalRead(48);
  if (ip_alarm_prev != ip_alarm)
  {
   ip_alarm_prev = ip_alarm;
-  DebugPort.print("ip_alarm=");
-  DebugPort.println(ip_alarm);
+  char Message[100];
+  sprintf(Message, "ip_alarm=%d", (int)ip_alarm);
+  DebugPort.println(Message);
+  UsbPort.println(Message);
  }
 
  ip_swt_cent = !digitalRead(52);
  if (ip_swt_cent_prev != ip_swt_cent)
  {
   ip_swt_cent_prev = ip_swt_cent;
-  DebugPort.print("ip_swt_cent=");
-  DebugPort.println(ip_swt_cent);
+  char Message[100];
+  sprintf(Message, "ip_swt_cent=%d", (int)ip_swt_cent);
+  DebugPort.println(Message);
+  UsbPort.println(Message);
  }
 }
 void scan_i2c_bus()

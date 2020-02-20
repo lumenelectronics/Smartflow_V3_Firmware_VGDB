@@ -47,30 +47,46 @@ Adafruit_SPIFlash flash_chip(&flashTransport);
 
 #define BOOT_MESSAGE "Smartflow V3"
 
-
-#line 48 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 47 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+uint32_t Get_Flash_Checksum(uint32_t pStart, uint32_t pStop);
+#line 62 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void Setup_IO();
-#line 96 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 110 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void Service_Leds();
-#line 187 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 201 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void LoRa_Setup();
-#line 205 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 219 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void Modem_Setup();
-#line 226 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 240 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void Flash_Setup();
-#line 248 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 262 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void Service_Switch();
-#line 275 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 293 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void scan_i2c_bus();
-#line 316 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 334 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void anISR();
-#line 322 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 340 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void setup_counters();
-#line 375 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 393 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void setup();
-#line 409 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 427 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
 void loop();
-#line 48 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+#line 47 "D:\\SourceTree\\Smartflow\\Firmware\\Smartflow_V3_Firmware_VGDB\\sketches\\Smartflow_Metro_M4.ino"
+uint32_t Get_Flash_Checksum(uint32_t pStart, uint32_t pStop)
+{
+	uint32_t x = 0;
+	volatile uint8_t *ptr = 0;
+	volatile uint32_t check = 0;
+	
+	for (x = pStart;x < (pStop + 1);x++)
+	{
+		check += ptr[x];
+	}
+	
+	return check;
+}
+
+
 void Setup_IO()
 {
 	pinMode(PIN_BAT_AN,INPUT);
@@ -286,16 +302,20 @@ void Service_Switch()
 	if (ip_alarm_prev != ip_alarm)
 	{
 		ip_alarm_prev = ip_alarm;
-		DebugPort.print("ip_alarm=");
-		DebugPort.println(ip_alarm);
+		char Message[100];
+		sprintf(Message, "ip_alarm=%d", (int)ip_alarm);
+		DebugPort.println(Message);
+		UsbPort.println(Message);		
 	}
 	
 	ip_swt_cent = !digitalRead(PIN_SW_CENT);
 	if (ip_swt_cent_prev != ip_swt_cent)
 	{
 		ip_swt_cent_prev = ip_swt_cent;
-		DebugPort.print("ip_swt_cent=");
-		DebugPort.println(ip_swt_cent);
+		char Message[100];
+		sprintf(Message, "ip_swt_cent=%d", (int)ip_swt_cent);
+		DebugPort.println(Message);
+		UsbPort.println(Message);		
 	}	
 }
 void scan_i2c_bus()
